@@ -85,7 +85,7 @@ async function extractJson() {
   }
   console.log(canvasObjs);
 
-  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(canvasObjs));
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(canvasObjs, null, 2));
   var downloadAnchorNode = document.createElement('a');
   downloadAnchorNode.setAttribute("href", dataStr);
   downloadAnchorNode.setAttribute("download",  "canvas.json");
