@@ -9,7 +9,7 @@
       document.querySelector('button').addEventListener('click', function () {
         const authorizeOptions = {
           response_type: 'token',
-          redirect_uri: 'http://' + window.location.host + '/miro2unify/auth-success.html',
+          redirect_uri: 'https://' + window.location.host + '/miro2unify/auth-success.html',
         }
         miro
           .authorize(authorizeOptions)
