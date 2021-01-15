@@ -17,68 +17,47 @@ miro.onReady(function () {
           '<circle cx="12" cy="12" r="9" fill="none" fill-rule="evenodd" stroke="currentColor" stroke-width="2"/>',
         positionPriority: 1,
         onClick: async () => {
-          const authorized = await miro.isAuthorized();
+          const authorized = await miro.isAuthorized()
           if (authorized) {
-            extractJson();
+            extractJson()
           } else {
             miro.board.ui.openModal('not-authorized.html').then((res) => {
               if (res === 'success') {
-                extractJson();
+                extractJson()
               }
-            });
+            })
           }
-        },
+        }
       },
-    },
-  });
-});
+    }      
+  })
+})
+
 
 async function extractJson() {
   // Get all board objects
-  const objects = await miro.board.widgets.get();
+  const objects = await miro.board.widgets.get()
   // Get all black rectangles
-  const canvasWrapperRects = objects.filter(
-    (object) =>
-      object.type === 'SHAPE' && object.style.backgroundColor !== '#ffffff',
-  );
-  // Get line seperator
-  const seperator = objects
-    .filter((obj) => {
-      return obj.type === 'LINE';
-    })
-    .sort((a, b) => {
-      return b.bounds.height - a.bounds.height;
-    })[0];
-  // Original canvases
-  const originals = canvasWrapperRects.filter((rec) => {
-    return rec.bounds.x < seperator.bounds.x;
-  });
-  // Copied canvases
-  const copies = canvasWrapperRects.filter((rec) => {
-    return rec.bounds.x > seperator.bounds.x;
-  });
+  const blackRecs = objects.filter((object)=> (object.type === "SHAPE") && (object.style.backgroundColor !== "#ffffff") )
   // Get all white rectangles
-  const questionWrapperRects = objects.filter(
-    (object) =>
-      object.type === 'SHAPE' && object.style.backgroundColor === '#ffffff',
-  );
+  const whiteRecs = objects.filter((object)=> (object.type === "SHAPE") && (object.style.backgroundColor === "#ffffff") )
   // Get all text nodes
-  const textNodes = objects.filter((object) => object.type === 'TEXT');
+  const textNodes = objects.filter((object)=> object.type === "TEXT" )
 
   const canvasObjs = [];
 
-  for (const canvasWrapper of canvasWrapperRects) {
+  for (const blackRec of blackRecs) {
     const qas = [];
     const canvasObj = {};
-    const containedWhites = questionWrapperRects
-      .filter((questionWrapper) => {
-        return rectContains(canvasWrapper, questionWrapper);
+    const containedWhites = whiteRecs
+      .filter((whiteRec) => {
+        return rectContains(blackRec, whiteRec);
       })
       .sort(byDistanceToTop);
-    for (const [index, questionWrapper] of containedWhites.entries()) {
+    for (const [index, whiteRec] of containedWhites.entries()) {
       const containedTexts = textNodes
         .filter((textNode) => {
-          return rectContains(questionWrapper, textNode);
+          return rectContains(whiteRec, textNode);
         })
         .sort(byDistanceToTop);
       if (index === 0) {
@@ -104,40 +83,12 @@ async function extractJson() {
     canvasObj.qas = qas;
     canvasObjs.push(canvasObj);
   }
-
   console.log(canvasObjs);
 
-  for (const canvasWrapper of originals) {
-    const containedWhites = questionWrapperRects
-      .filter((questionWrapper) => {
-        return rectContains(canvasWrapper, questionWrapper);
-      })
-      .sort(byDistanceToTop);
-    const canvasHeadingWrapper = containedWhites[0];
-
-    const containedTexts = textNodes
-      .filter((textNode) => {
-        return rectContains(canvasHeadingWrapper, textNode);
-      })
-      .sort(byDistanceToTop);
-    const heading = containedTexts
-      .map((text) => {
-        return text.plainText;
-      })
-      .join(' ');
-    for (const canvas of canvasObjs) {
-      if (canvas.title === heading) {
-        canvas.createdBy = containedTexts[0].createdUserId;
-      }
-    }
-  }
-
-  var dataStr =
-    'data:text/json;charset=utf-8,' +
-    encodeURIComponent(JSON.stringify(canvasObjs, null, 2));
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(canvasObjs, null, 2));
   var downloadAnchorNode = document.createElement('a');
-  downloadAnchorNode.setAttribute('href', dataStr);
-  downloadAnchorNode.setAttribute('download', 'canvas.json');
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute("download",  "canvas.json");
   document.body.appendChild(downloadAnchorNode); // required for firefox
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
