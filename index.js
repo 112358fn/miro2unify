@@ -61,11 +61,12 @@ async function extractJson() {
         })
         .sort(byDistanceToTop);
       if (index === 0) {
-        canvasObj.title = containedTexts
+        [canvasObj.title, canvasObj.id] = containedTexts
           .map((text) => {
             return text.plainText;
           })
-          .join(' ');
+          .join(' ')
+          .split('>>');
       } else {
         const qa = {
           answer: '',
@@ -88,7 +89,7 @@ async function extractJson() {
   var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(canvasObjs, null, 2));
   var downloadAnchorNode = document.createElement('a');
   downloadAnchorNode.setAttribute("href", dataStr);
-  downloadAnchorNode.setAttribute("download",  "canvas.json");
+  downloadAnchorNode.setAttribute("download", "canvas.json");
   document.body.appendChild(downloadAnchorNode); // required for firefox
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
